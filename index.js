@@ -1,43 +1,63 @@
-// app.js
+document.addEventListener('DOMContentLoaded', function() {
+    var quantities = document.querySelectorAll('[id^="qty"]');
+    var checkoutButton = document.querySelector('.checkoutBtn');
+    var cashInput = document.getElementById("cash");
 
-// Prices for the items
-const prices = {
-    qty1: 1500.00,
-    qty2: 580.00,
-    qty3: 900.00,
-    qty4: 700.00,
-    qty5: 570.00,
-    qty6: 3000.00
-};
+    quantities.forEach(function(input) {
+        input.addEventListener('input', function() {
+            addOrder();
+        });
+    });
 
-// Update order details
-function updateOrder() {
-    let orderDetails = "";
-    let total = 0;
+    checkoutButton.addEventListener('click', function() {
+        calculateChange();
+    });
 
-    for (let i = 1; i <= 6; i++) {
-        let qty = document.getElementById(`qty${i}`).value;
-        if (qty > 0) {
-            let itemPrice = prices[`qty${i}`];
-            let itemTotal = qty * itemPrice;
-            orderDetails += `Item ${i}: ${qty} x ₱${itemPrice.toFixed(2)} = ₱${itemTotal.toFixed(2)}\n`;
-            total += itemTotal;
+    function addOrder() {
+        var carts = document.getElementById("carts");
+        carts.value = ""; // Clear carts textarea
+
+        for (let i = 1; i <= 8; i++) {
+            var qtyInput = document.getElementById("qty" + i);
+            if (!qtyInput) continue;
+            var productTitle = qtyInput.closest(".card-body").querySelector(".card-title").innerText;
+            var productPrice = parseFloat(document.getElementById("price" + i).innerText);
+
+            if (qtyInput.value > 0) {
+                var order = `${qtyInput.value} pcs x ${productTitle} - ₱${(qtyInput.value * productPrice).toFixed(2)}\n`;
+                carts.value += order;
+            }
         }
+
+        updateTotal(); // Update total after adding order
     }
 
-    document.getElementById("carts").value = orderDetails;
-    document.getElementById("total").value = `Total: ₱${total.toFixed(2)}`;
-}
+    function updateTotal() {
+        var total = 0;
 
-// Calculate change
-function calculateChange() {
-    let total = parseFloat(document.getElementById("total").value.replace("Total: ₱", ""));
-    let cash = parseFloat(document.getElementById("cash").value);
+        for (let i = 1; i <= 8; i++) {
+            var qtyInput = document.getElementById("qty" + i);
+            if (!qtyInput) continue;
+            var productPrice = parseFloat(document.getElementById("price" + i).innerText);
 
-    if (!isNaN(total) && !isNaN(cash)) {
-        let change = cash - total;
-        document.getElementById("change").value = `Change: ₱${change.toFixed(2)}`;
-    } else {
-        document.getElementById("change").value = "Change: ₱0.00";
+            total += qtyInput.value * productPrice;
+        }
+
+        document.getElementById("total").value = total.toFixed(2); // Update total input
+        console.log("Total Updated: ", total.toFixed(2)); // Debugging
     }
-}
+
+    function calculateChange() {
+        var total = parseFloat(document.getElementById("total").value);
+        var cash = parseFloat(cashInput.value);
+        var change = cash - total;
+
+        if (isNaN(change)) {
+            alert("Please enter a valid amount of cash.");
+            return;
+        }
+
+        document.getElementById("change").value = change.toFixed(2); // Update change input
+        console.log("Change Calculated: ", change.toFixed(2)); // Debugging
+    }
+});
